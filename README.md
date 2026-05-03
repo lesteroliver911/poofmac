@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/cover.png" alt="PoofMac — Local AI-powered Mac disk cleaner" width="100%">
+  <img src="assets/cover.png" alt="PoofMac — Local AI-powered Mac disk cleaner" width="80%">
 </p>
 
 # PoofMac 💨
@@ -24,7 +24,7 @@ No subscription. No account. No data leaves your machine.
 | Interface | Command | Best for |
 |---|---|---|
 | **AI Chat** | `poofmac --chat` | Ask anything in plain English — best starting point |
-| **Desktop GUI** | `poofmac` | Daily use, native macOS window |
+| **Desktop GUI** | `poofmac` | Daily use, native macOS window (coming soon) |
 | **Terminal TUI** | `poofmac --tui` | SSH, headless, developer preference |
 | **Non-interactive CLI** | `poofmac --cli` | Scripts, CI, piped output |
 
