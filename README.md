@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/cover.png" alt="PoofMac — Local AI-powered Mac disk cleaner" width="100%">
+</p>
+
 # PoofMac 💨
 
 **An open-source, AI-powered Mac disk cleaner runs locally, no subscriptions, no surprises.**
