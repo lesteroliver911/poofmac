@@ -632,15 +632,17 @@ class AgentWorker(QThread):
 
     event_emitted = Signal(dict)
 
-    def __init__(self, settings: Settings, message: str) -> None:
+    def __init__(self, settings: Settings, message: str, agent: "CleanerAgent | None" = None) -> None:
         super().__init__()
         self.settings = settings
         self.message = message
+        self._agent = agent  # reuse existing agent for chat continuity
 
     def run(self) -> None:
         try:
-            agent = CleanerAgent(self.settings)
-            for event in agent.run(self.message):
+            if self._agent is None:
+                self._agent = CleanerAgent(self.settings)
+            for event in self._agent.run(self.message):
                 self.event_emitted.emit(event)
         except Exception as exc:  # noqa: BLE001
             self.event_emitted.emit({"type": "error", "text": str(exc)})
@@ -1093,6 +1095,9 @@ class PoofMacWindow(QMainWindow):
         self._spinner_idx = 0
         self._spinner_timer = QTimer(self)
         self._spinner_timer.timeout.connect(self._tick_spinner)
+        # Persistent chat agent — reused across follow-up messages so the AI
+        # remembers previous context ("now delete those", "what about logs?")
+        self._chat_agent: Optional[CleanerAgent] = None
 
         self.setWindowTitle("PoofMac")
         self.setMinimumSize(960, 640)
@@ -1302,7 +1307,7 @@ class PoofMacWindow(QMainWindow):
 
         self.chat_input = QLineEdit()
         self.chat_input.setPlaceholderText(
-            "Ask about disk usage, or press Scan to start…"
+            "Chat with AI — ask anything, or try: 'delete the Xcode caches'…"
         )
         self.chat_input.returnPressed.connect(self._on_chat_submit)
         layout.addWidget(self.chat_input, stretch=1)
@@ -1438,23 +1443,36 @@ class PoofMacWindow(QMainWindow):
 
     # ── Agent worker ───────────────────────────────────────────────────────────
 
-    def _start_scan(self, message: str) -> None:
+    def _start_scan(self, message: str, fresh: bool = True) -> None:
+        """Start the agent.
+
+        fresh=True  → Scan button: reset agent, clear table, full scan UI.
+        fresh=False → Chat input: reuse persistent agent with conversation history.
+        """
         if self._scanning:
             return
         self._scanning = True
         self.scan_btn.setEnabled(False)
         self._spinner_idx = 0
         self._spinner_timer.start(100)
-        self.table.setRowCount(0)
-        self.cleanup_items.clear()
-        self._empty_label.setText(
-            "💨  Scanning your Mac…\n\nAI is analysing your disk — this may take a moment."
-        )
-        self._stack.setCurrentIndex(0)
-        self._summary_banner.setVisible(False)
-        self._update_exec_button()
 
-        self._worker = AgentWorker(self.settings, message)
+        if fresh:
+            # Full scan — reset everything including the persistent chat agent
+            self._chat_agent = None
+            self.table.setRowCount(0)
+            self.cleanup_items.clear()
+            self._empty_label.setText(
+                "💨  Scanning your Mac…\n\nAI is analysing your disk — this may take a moment."
+            )
+            self._stack.setCurrentIndex(0)
+            self._summary_banner.setVisible(False)
+            self._update_exec_button()
+
+        # Create a new agent for fresh scans; reuse persistent agent for chat
+        if self._chat_agent is None:
+            self._chat_agent = CleanerAgent(self.settings)
+
+        self._worker = AgentWorker(self.settings, message, agent=self._chat_agent)
         self._worker.event_emitted.connect(self._on_agent_event)
         self._worker.finished.connect(self._on_agent_finished)
         self._worker.start()
@@ -1751,7 +1769,8 @@ class PoofMacWindow(QMainWindow):
             f'<b>Starting disk analysis…</b></span>'
         )
         self._start_scan(
-            "Analyse my Mac's disk usage and show me everything I can safely clean up."
+            "Analyse my Mac's disk usage and show me everything I can safely clean up.",
+            fresh=True,
         )
 
     def _on_chat_submit(self) -> None:
@@ -1763,7 +1782,8 @@ class PoofMacWindow(QMainWindow):
             f'<br><span style="color:{self.t.text_secondary};"><b>You</b></span>'
             f'&nbsp;{msg}'
         )
-        self._start_scan(msg)
+        # Use fresh=False so the persistent agent remembers previous context
+        self._start_scan(msg, fresh=False)
 
     def _on_safe_mode_toggled(self, checked: bool) -> None:
         self.safe_mode = checked
