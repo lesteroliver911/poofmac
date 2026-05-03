@@ -90,41 +90,6 @@ cp .env.example .env
 
 ---
 
-## Desktop GUI
-
-```
-poofmac
-```
-
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│  💨 PoofMac   Model: [gemma4:31b-cloud ▼]  [☐ Safe Mode]  [⚙]       │
-├──────────────────────────────────────────────────────────────────────┤
-│  11.5 GB / 228 GB  [██░░░░░░░░░░░░░░░░]  5%   Free: 217 GB           │
-│ ─────────────────────────────────────────────────────────────────── │
-│  💨  You could free ~4.2 GB today — select items below and click Clean │
-├──────────────────────────┬───────────────────────────────────────────┤
-│  Activity Log            │ ☑  📦 App Caches    1.7 GB   ● Safe       │
-│  💾 get_disk_overview()  │ ☑  📋 System Logs  127 MB   ● Safe        │
-│     └─ done              │ ☐  📥 Downloads    777 MB   ● Review       │
-│  📋 Plan ready — review  │ 3 items | 2 safe | 1 review | 0 skip       │
-├──────────────────────────┴───────────────────────────────────────────┤
-│  [ Ask anything… ]    [Scan]    [Clean 2 items  (~1.8 GB)]            │
-└──────────────────────────────────────────────────────────────────────┘
-```
-
-**Keyboard shortcuts**
-
-| Key | Action |
-|---|---|
-| `F5` | Start scan |
-| `Ctrl+A` | Approve all SAFE rows |
-| `Ctrl+U` | Unapprove all rows |
-| `Ctrl+Return` | Execute approved deletions |
-| `⚙` button | Open Settings (API keys, model, safe mode) |
-
----
-
 ## Terminal TUI
 
 ```
