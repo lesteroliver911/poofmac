@@ -1,11 +1,17 @@
 # PoofMac 💨
 
-**An open-source, AI-powered Mac disk cleaner with robust safety guardrails.**
+**An open-source, AI-powered Mac disk cleaner — runs locally, no subscriptions, no surprises.**
 
-Instead of paying for CleanMyMac or using sketchy crack software, PoofMac uses
-an LLM (local via Ollama or cloud via Anthropic / OpenRouter / OpenAI) to
-analyse your disk, explain exactly what is taking up space, and propose a
-cleanup plan — which *you* review and approve before anything is deleted.
+I was deep in a coding session when my Mac suddenly threw a "2 GB remaining" warning.
+I had no idea where the space had gone. I asked an AI — and in minutes it found
+gigabytes of Xcode caches, old simulator images, and stale build artifacts I never
+knew existed.
+
+PoofMac turns that conversation into a proper tool. It runs a local AI model on your
+Mac, analyses your disk, explains exactly what is taking up space in plain English,
+and proposes a cleanup plan — which *you* review and approve before anything is deleted.
+
+No subscription. No account. No data leaves your machine.
 
 ---
 
@@ -55,7 +61,6 @@ pip install "poofmac[gui]"
 poofmac
 ```
 
-> PoofMac is not on PyPI yet — for now, install from source (see below).
 
 ---
 
@@ -165,27 +170,19 @@ venvs, Homebrew cache, Trash, and items you select in `~/Downloads`.
 
 ## Model guide
 
-PoofMac works with any LLM provider. The 20–40B parameter range gives the
-best balance of tool-calling accuracy and speed.
+PoofMac is built around local models — your data stays on your Mac.
+The 14–35B parameter range hits the sweet spot of accuracy and speed.
 
-### Anthropic (recommended — no local setup)
+### Ollama local (recommended — runs on your Mac, no API key, no data sent anywhere)
 
-| Model | Speed | Quality | Cost |
-|---|---|---|---|
-| `claude-sonnet-4-6` | Fast | ★★★★★ | $$$ |
-| `claude-haiku-4-5` | Fastest | ★★★★☆ | $ |
-| `claude-opus-4-7` | Slow | ★★★★★ | $$$$ |
+[Install Ollama](https://ollama.com) once, then pull a model:
 
-### Ollama cloud (requires Ollama subscription, no local RAM)
-
-| Model | Notes |
-|---|---|
-| `deepseek-v4-flash:cloud` | Very fast, good tool-calling |
-| `gemma4:31b-cloud` | Reliable structured output |
-| `qwen3.5:cloud` | Strong reasoning |
-| `kimi-k2.6:cloud` | 32B equivalent, excellent |
-
-### Ollama local (runs on your Mac, no API key)
+```bash
+ollama pull qwen3.6:35b-a3b   # best overall (MoE — only 3B active, needs ~24 GB RAM)
+ollama pull qwen3.6:27b        # dense, excellent tool-calling (~17 GB RAM)
+ollama pull qwen2.5:14b        # good for 16 GB Macs (~9 GB RAM)
+ollama pull llama3.1:8b        # minimum — 8 GB Mac (~5 GB RAM)
+```
 
 | Model | RAM needed | Notes |
 |---|---|---|
@@ -196,19 +193,18 @@ best balance of tool-calling accuracy and speed.
 | `qwen2.5:14b` | ~9 GB | Minimum recommended |
 | `llama3.1:8b` | ~5 GB | Absolute minimum (8 GB Mac) |
 
-Pull a local model:
+### Cloud providers (optional — if you already have an API key)
 
-```bash
-ollama pull qwen3.6:35b-a3b
-```
+If you have an Anthropic, OpenAI, or OpenRouter account you can point PoofMac
+at those too — but it's completely optional. The tool runs fine without any
+cloud account.
 
-### OpenRouter (any model via one key)
-
-```bash
-# .env
-OPENROUTER_API_KEY=sk-or-...
-PREFERRED_CLOUD_MODEL=anthropic/claude-sonnet-4-6
-```
+| Provider | Model | Notes |
+|---|---|---|
+| Anthropic | `claude-sonnet-4-6` | Strong reasoning, fast |
+| Anthropic | `claude-haiku-4-5` | Fastest, lightest cost |
+| OpenAI | `gpt-4.1` | Reliable tool-calling |
+| OpenRouter | any | One key for many models |
 
 ---
 
@@ -283,4 +279,4 @@ Built by **[lesteroliver](https://github.com/lesteroliver)** — developer, make
 
 ---
 
-*Built with ❤️ for developers who'd rather ship than subscribe.*
+*Built for developers who'd rather understand their Mac than pay a monthly fee to clean it.*

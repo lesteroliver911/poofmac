@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "poofmac"
 version = "0.2.0"
-description = "PoofMac — AI-powered Mac disk cleaner with robust safety guardrails"
+description = "PoofMac — local AI-powered Mac disk cleaner. Runs on Ollama, no subscription, no data leaves your machine."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
