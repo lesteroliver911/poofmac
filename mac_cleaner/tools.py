@@ -1,0 +1,235 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 lesteroliver — https://poofmac.app
+"""
+LLM tool definitions and dispatch.
+
+Each tool corresponds to a scanner function. The LLM calls these via
+structured tool-calling; it never runs shell commands directly.
+
+Tool flow
+─────────
+  LLM → tool_call JSON  →  execute_tool()  →  scanner / safety function
+                        ←  JSON string result
+
+The `propose_cleanup_plan` tool is special: the LLM calls it to present its
+findings. The TUI intercepts this and renders the plan as an interactive table.
+"""
+
+from __future__ import annotations
+
+import json
+
+from mac_cleaner.safety import validate_path
+from mac_cleaner.scanner import (
+    get_disk_usage,
+    run_full_scan,
+    scan_user_caches,
+    scan_system_logs,
+    scan_xcode_artifacts,
+    scan_dev_artifacts,
+    scan_homebrew_cache,
+    scan_trash,
+    scan_downloads,
+    scan_docker,
+    format_size,
+)
+
+# ── Tool schema ───────────────────────────────────────────────────────────────
+
+TOOLS: list[dict] = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_disk_overview",
+            "description": (
+                "Get current disk usage: total capacity, used, and free space. "
+                "Always call this first before any other scan."
+            ),
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_full_disk_scan",
+            "description": (
+                "Run a comprehensive scan of all common disk-space consumers: "
+                "app caches, logs, Xcode artifacts, Homebrew cache, Trash, "
+                "Downloads, dev artifacts (node_modules/.venv/etc.), and Docker. "
+                "Returns a structured summary with sizes and safety ratings."
+            ),
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "scan_category",
+            "description": "Scan a single category in depth for more detail.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "caches", "logs", "xcode", "dev_artifacts",
+                            "trash", "downloads", "homebrew", "docker",
+                        ],
+                        "description": "Category to scan.",
+                    }
+                },
+                "required": ["category"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "check_path_safety",
+            "description": (
+                "Check whether a specific path is safe to delete. "
+                "Always call this for any path not returned by a scan function "
+                "before adding it to a cleanup proposal."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Absolute file or directory path to check.",
+                    }
+                },
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "propose_cleanup_plan",
+            "description": (
+                "Present the cleanup plan to the user as a dry-run report. "
+                "Call this AFTER scanning, with all items you recommend reviewing. "
+                "The UI will render this as an interactive table for user approval. "
+                "Include a clear summary and an entry for every item found."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "summary": {
+                        "type": "string",
+                        "description": (
+                            "1-3 sentence summary of findings: disk status, "
+                            "total recoverable space, and key observations."
+                        ),
+                    },
+                    "items": {
+                        "type": "array",
+                        "description": "Cleanup candidates for the user to review.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "description": "Absolute path to delete or empty.",
+                                },
+                                "size_human": {
+                                    "type": "string",
+                                    "description": "Human-readable size, e.g. '8.2 GB'.",
+                                },
+                                "category": {
+                                    "type": "string",
+                                    "description": "Category name, e.g. 'App Caches'.",
+                                },
+                                "reason": {
+                                    "type": "string",
+                                    "description": (
+                                        "Why this is safe (or not) to delete. "
+                                        "Be specific and honest."
+                                    ),
+                                },
+                                "risk_level": {
+                                    "type": "string",
+                                    "enum": ["SAFE", "CAUTION", "SKIP"],
+                                    "description": (
+                                        "SAFE = auto-recreated, CAUTION = review first, "
+                                        "SKIP = do not delete."
+                                    ),
+                                },
+                            },
+                            "required": ["path", "size_human", "category", "reason", "risk_level"],
+                        },
+                    },
+                },
+                "required": ["summary", "items"],
+            },
+        },
+    },
+]
+
+
+# ── Tool dispatcher ───────────────────────────────────────────────────────────
+
+_CATEGORY_MAP = {
+    "caches":        scan_user_caches,
+    "logs":          scan_system_logs,
+    "xcode":         scan_xcode_artifacts,
+    "dev_artifacts": scan_dev_artifacts,
+    "trash":         scan_trash,
+    "downloads":     scan_downloads,
+    "homebrew":      scan_homebrew_cache,
+    "docker":        scan_docker,
+}
+
+
+def execute_tool(name: str, args: dict) -> str:
+    """
+    Dispatch a tool call and return the result as a JSON string.
+    This is the only path through which the LLM can trigger scanning.
+    """
+
+    if name == "get_disk_overview":
+        return json.dumps(get_disk_usage())
+
+    if name == "run_full_disk_scan":
+        result = run_full_scan()
+        # Limit items per category to keep context window reasonable
+        for r in result.get("results", []):
+            if len(r.get("items", [])) > 12:
+                r["items"] = r["items"][:12]
+                r["items_truncated_to"] = 12
+        return json.dumps(result)
+
+    if name == "scan_category":
+        cat = args.get("category", "")
+        scanner = _CATEGORY_MAP.get(cat)
+        if scanner is None:
+            return json.dumps({"error": f"Unknown category: {cat!r}"})
+        results = scanner()
+        return json.dumps([r.to_dict() for r in results])
+
+    if name == "check_path_safety":
+        path = args.get("path", "")
+        if not path:
+            return json.dumps({"error": "path argument is required"})
+        verdict = validate_path(path)
+        return json.dumps(
+            {
+                "path": verdict.path,
+                "is_safe": verdict.is_safe,
+                "reason": verdict.reason,
+                "risk_level": verdict.risk_level,
+            }
+        )
+
+    if name == "propose_cleanup_plan":
+        # The TUI intercepts and renders this; we just echo it back so the
+        # LLM receives confirmation the tool was called successfully.
+        return json.dumps(
+            {
+                "status": "plan_presented",
+                "item_count": len(args.get("items", [])),
+            }
+        )
+
+    return json.dumps({"error": f"Unknown tool: {name!r}"})

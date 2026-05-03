@@ -1,0 +1,101 @@
+name: Build macOS DMG
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  # Intel runner — broadest compatibility with macOS 12/13 target
+  build-intel:
+    name: Build DMG (Intel / macos-13)
+    runs-on: macos-13
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Briefcase
+        run: pip install briefcase
+
+      - name: Install GUI dependencies
+        run: pip install "PySide6>=6.6.0"
+
+      - name: Build macOS app bundle
+        run: briefcase build macOS app
+
+      - name: Package as DMG (ad-hoc signed)
+        run: briefcase package macOS app --adhoc-sign
+
+      - name: Upload Intel DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PoofMac-${{ github.ref_name }}-macOS-Intel
+          path: dist/*.dmg
+          retention-days: 90
+
+      - name: Attach Intel DMG to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.dmg
+          generate_release_notes: true
+          body: |
+            ## PoofMac ${{ github.ref_name }}
+
+            **Download:** Click the `.dmg` file below (Intel or Apple Silicon), open it, and drag PoofMac to your Applications folder.
+
+            > ⚠️ First launch: macOS may show a security warning because the app is ad-hoc signed.
+            > Right-click the app → **Open** to bypass it.
+            > A notarized build (no warning) requires an Apple Developer account.
+
+            **Requirements:** macOS 12 Monterey or later (Intel and Apple Silicon).
+
+            **Built by [lesteroliver](https://github.com/lesteroliver) · [poofmac.app](https://poofmac.app)**
+
+            **Not affiliated with Apple Inc.** This software is provided "as is" with no warranty.
+            See [DISCLAIMER.md](https://github.com/poofmac/poofmac/blob/main/DISCLAIMER.md) for full terms.
+
+  # Apple Silicon runner — latest macOS / M-series
+  build-arm:
+    name: Build DMG (Apple Silicon / macos-latest)
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Briefcase
+        run: pip install briefcase
+
+      - name: Install GUI dependencies
+        run: pip install "PySide6>=6.6.0"
+
+      - name: Build macOS app bundle
+        run: briefcase build macOS app
+
+      - name: Package as DMG (ad-hoc signed)
+        run: briefcase package macOS app --adhoc-sign
+
+      - name: Upload Apple Silicon DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PoofMac-${{ github.ref_name }}-macOS-AppleSilicon
+          path: dist/*.dmg
+          retention-days: 90
+
+      - name: Attach Apple Silicon DMG to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.dmg

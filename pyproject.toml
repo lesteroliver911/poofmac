@@ -1,0 +1,99 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "poofmac"
+version = "0.2.0"
+description = "PoofMac — AI-powered Mac disk cleaner with robust safety guardrails"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "lesteroliver", email = "hello@poofmac.app" },
+]
+keywords = ["mac", "disk", "cleaner", "ai", "ollama", "llm", "macos"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: MacOS X",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "litellm>=1.35.0",
+    "rich>=13.7.0",
+    "textual>=0.60.0",
+    "pydantic-settings>=2.2.0",
+    "pydantic>=2.6.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://poofmac.app"
+Repository = "https://github.com/poofmac/poofmac"
+"Bug Tracker" = "https://github.com/poofmac/poofmac/issues"
+
+[project.scripts]
+poofmac = "mac_cleaner.main:run"
+mac-cleaner = "mac_cleaner.main:run"
+
+[project.optional-dependencies]
+dev = [
+    "textual-dev>=0.60.0",
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+]
+gui = [
+    "PySide6>=6.6.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["mac_cleaner"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+# ── Briefcase — macOS app bundle + DMG ────────────────────────────────────────
+# Build commands:
+#   pip install briefcase
+#   briefcase build macOS
+#   briefcase package macOS --adhoc-sign    # local/CI (no Apple Developer account)
+#   briefcase package macOS                 # signed (requires APPLE_* env vars)
+
+[tool.briefcase]
+project_name = "PoofMac"
+bundle = "app.poofmac"
+version = "0.2.0"
+url = "https://poofmac.app"
+license.file = "LICENSE"
+author = "PoofMac Contributors"
+author_email = "hello@poofmac.app"
+
+[tool.briefcase.app.mac_cleaner]
+formal_name = "PoofMac"
+description = "AI-powered Mac disk cleaner with robust safety guardrails"
+icon = "assets/icon"
+sources = ["mac_cleaner"]
+requires = [
+    "PySide6>=6.6.0",
+    "litellm>=1.35.0",
+    "rich>=13.7.0",
+    "textual>=0.60.0",
+    "pydantic-settings>=2.2.0",
+    "pydantic>=2.6.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.briefcase.app.mac_cleaner.macOS]
+# macOS entitlements — disk access and network for LLM APIs
+minimum_os_version = "12.0"
+entitlements."com.apple.security.files.user-selected.read-write" = true
+entitlements."com.apple.security.network.client" = true
+requires = []
