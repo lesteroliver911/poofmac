@@ -1,15 +1,15 @@
 # PoofMac 💨
 
-**An open-source, AI-powered Mac disk cleaner — runs locally, no subscriptions, no surprises.**
+**An open-source, AI-powered Mac disk cleaner runs locally, no subscriptions, no surprises.**
 
-I was deep in a coding session when my Mac suddenly threw a "2 GB remaining" warning.
-I had no idea where the space had gone. I asked an AI — and in minutes it found
+I was deep in a coding session when my Mac suddenly threw a "No disk space" warning.
+I had no idea where the space had gone. I asked an AI and in minutes it found
 gigabytes of Xcode caches, old simulator images, and stale build artifacts I never
 knew existed.
 
 PoofMac turns that conversation into a proper tool. It runs a local AI model on your
 Mac, analyses your disk, explains exactly what is taking up space in plain English,
-and proposes a cleanup plan — which *you* review and approve before anything is deleted.
+and proposes a cleanup plan which *you* review and approve before anything is deleted.
 
 No subscription. No account. No data leaves your machine.
 
