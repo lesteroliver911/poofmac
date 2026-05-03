@@ -56,10 +56,10 @@ jobs:
 
             **Requirements:** macOS 12 Monterey or later (Intel and Apple Silicon).
 
-            **Built by [lesteroliver](https://github.com/lesteroliver) · [poofmac.app](https://poofmac.app)**
+            **Built by [lesteroliver](https://github.com/lesteroliver911) · [poofmac.app](https://poofmac.app)**
 
             **Not affiliated with Apple Inc.** This software is provided "as is" with no warranty.
-            See [DISCLAIMER.md](https://github.com/poofmac/poofmac/blob/main/DISCLAIMER.md) for full terms.
+            See [DISCLAIMER.md](https://github.com/lesteroliver911/poofmac/blob/main/DISCLAIMER.md) for full terms.
 
   # Apple Silicon runner — latest macOS / M-series
   build-arm:

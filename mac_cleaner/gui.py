@@ -759,7 +759,7 @@ class DisclaimerDialog(QDialog):
 
         # Author credit
         author_lbl = QLabel(
-            'Made by <a href="https://github.com/lesteroliver" style="color:#0A84FF;">lesteroliver</a>'
+            'Made by <a href="https://github.com/lesteroliver911" style="color:#0A84FF;">lesteroliver</a>'
             ' · <a href="https://poofmac.app" style="color:#0A84FF;">poofmac.app</a>'
         )
         author_lbl.setOpenExternalLinks(True)
@@ -1134,7 +1134,7 @@ class PoofMacWindow(QMainWindow):
 
         # Credits bar
         credits_bar = QLabel(
-            'Made by <a href="https://github.com/lesteroliver" style="color:#0A84FF;">lesteroliver</a>'
+            'Made by <a href="https://github.com/lesteroliver911" style="color:#0A84FF;">lesteroliver</a>'
             ' &nbsp;·&nbsp; '
             '<a href="https://linkedin.com/in/lesteroliver" style="color:#0A84FF;">LinkedIn</a>'
             ' &nbsp;·&nbsp; '

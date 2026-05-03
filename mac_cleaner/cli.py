@@ -189,7 +189,7 @@ def _banner(model_display: str, safe_mode: bool) -> Panel:
 # ── Main CLI runner ───────────────────────────────────────────────────────────
 
 _CREDITS = (
-    "Made by [link=https://github.com/lesteroliver]lesteroliver[/link]"
+    "Made by [link=https://github.com/lesteroliver911]lesteroliver[/link]"
     "  ·  [link=https://linkedin.com/in/lesteroliver]LinkedIn[/link]"
     "  ·  [link=https://poofmac.app]poofmac.app[/link]"
 )

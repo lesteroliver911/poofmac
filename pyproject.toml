@@ -37,8 +37,8 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://poofmac.app"
-Repository = "https://github.com/poofmac/poofmac"
-"Bug Tracker" = "https://github.com/poofmac/poofmac/issues"
+Repository = "https://github.com/lesteroliver911/poofmac"
+"Bug Tracker" = "https://github.com/lesteroliver911/poofmac/issues"
 
 [project.scripts]
 poofmac = "mac_cleaner.main:run"

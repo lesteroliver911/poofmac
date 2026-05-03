@@ -139,7 +139,7 @@ This tool is open-source. Review the safety.py module before use.
                 yield Button("✅  I Understand & Accept", id="btn-accept", variant="warning")
                 yield Button("❌  Exit", id="btn-decline", variant="error")
             yield Static(
-                "Made by lesteroliver · github.com/lesteroliver · poofmac.app",
+                "Made by lesteroliver · github.com/lesteroliver911 · poofmac.app",
                 id="disclaimer-credits",
             )
 

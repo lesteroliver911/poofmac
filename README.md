@@ -67,7 +67,7 @@ poofmac
 ### Install from source
 
 ```bash
-git clone https://github.com/poofmac/poofmac
+git clone https://github.com/lesteroliver911/poofmac
 cd poofmac
 
 # With uv
@@ -272,9 +272,9 @@ MIT — see [LICENSE](LICENSE).
 
 ## Author
 
-Built by **[lesteroliver](https://github.com/lesteroliver)** — developer, maker, and the person who ran out of disk space mid-sprint.
+Built by **[lesteroliver](https://github.com/lesteroliver911)** — developer, maker, and the person who ran out of disk space mid-sprint.
 
-- GitHub: [github.com/lesteroliver](https://github.com/lesteroliver)
+- GitHub: [github.com/lesteroliver911](https://github.com/lesteroliver911)
 - LinkedIn: [linkedin.com/in/lesteroliver](https://linkedin.com/in/lesteroliver)
 
 ---
